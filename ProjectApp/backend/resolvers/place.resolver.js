@@ -1,0 +1,40 @@
+// backend/resolvers/place.resolver.js
+import Place from '../models/place.model.js';
+
+const resolvers = {
+  Query: {
+    getPlaces: async () => {
+      return await Place.find({});
+    },
+    getNearbyPlaces: async (_, { lat, lng, radius }) => {
+      return await Place.find({
+        geometry: {
+          $nearSphere: {
+            $geometry: {
+              type: "Point",
+              coordinates: [lng, lat], // GeoJSON order is [lng, lat]
+            },
+            $maxDistance: radius, // in meters
+          },
+        },
+      });
+    },
+    searchPlaces: async (_, { keyword }) => {
+      return await Place.find({
+        $text: { $search: keyword }
+      });
+    },
+  },
+  Place: {
+    id: (parent) => parent._id.toString(),
+    location: (parent) => {
+      if (!parent.geometry) return null;
+      return {
+        lat: parent.geometry.coordinates[1],
+        lng: parent.geometry.coordinates[0],
+      };
+    },
+  },
+};
+
+export default resolvers;

@@ -1,0 +1,1 @@
+// SiteDetail component
