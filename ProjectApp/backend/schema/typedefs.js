@@ -37,10 +37,29 @@ const typeDefs = gql`
     location: Location
   }
 
+  type User {
+    _id: ID
+    name: String
+    email: String
+  }
+
+  type AuthPayload {
+    token: String
+    user: User
+  }
+
   type Query {
     getPlaces: [Place]
     getNearbyPlaces(lat: Float!, lng: Float!, radius: Float!): [Place]
     searchPlaces(keyword: String!): [Place]
+    getFavorites: [Place]
+  }
+
+  type Mutation {
+    register(name: String!, email: String!, password: String!): AuthPayload
+    login(email: String!, password: String!): AuthPayload
+    addFavorite(placeId: ID!): Boolean
+    removeFavorite(placeId: ID!): Boolean
   }
 `;
 
