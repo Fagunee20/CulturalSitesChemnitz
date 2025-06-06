@@ -4,40 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cultural Sites of Chemnitz</title>
+    <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <header>
-      <h1>Cultural Sites of Chemnitz</h1>
-    </header>
-
-    <nav>
-      <form>
-        <input type="text" id="search" name="search" placeholder="Search by name..." />
-        <select id="category-filter" name="category">
-          <option value="">All Categories</option>
-          <option value="museum">Museum</option>
-          <option value="artwork">Artwork</option>
-          <option value="gallery">Gallery</option>
-          <option value="theatre">Theatre</option>
-          <option value="restaurant">Restaurant</option>
-        </select>
-      </form>
-    </nav>
-
-    <main>
-      <div id="map"></div>
-      <section id="results"></section>
-    </main>
-
-    <footer>
-      <nav>
-        <a href="/register">Register</a>
-        <a href="/favorites">Favorites</a>
-        <a href="/docs">Documentation</a>
-        <a href="/about">About</a>
-      </nav>
-    </footer>
-
+    <div id="root"></div> <!-- React app will mount here -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

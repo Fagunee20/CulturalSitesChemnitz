@@ -1,4 +1,4 @@
-// typedefs.js
+// backend/schema/typedefs.js
 import { gql } from 'apollo-server-express';
 
 const typeDefs = gql`
@@ -38,7 +38,7 @@ const typeDefs = gql`
   }
 
   type User {
-    _id: ID
+    _id: ID!
     name: String
     email: String
   }
@@ -53,11 +53,14 @@ const typeDefs = gql`
     getNearbyPlaces(lat: Float!, lng: Float!, radius: Float!): [Place]
     searchPlaces(keyword: String!): [Place]
     getFavorites: [Place]
+    getPlaceById(id: ID!): Place
   }
 
   type Mutation {
     register(name: String!, email: String!, password: String!): AuthPayload
     login(email: String!, password: String!): AuthPayload
+    updateUser(name: String, email: String, password: String): User
+    deleteUser: Boolean
     addFavorite(placeId: ID!): Boolean
     removeFavorite(placeId: ID!): Boolean
   }

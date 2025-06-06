@@ -4,8 +4,9 @@ import { gql } from '@apollo/client';
 export const GET_PLACES = gql`
   query GetPlaces {
     getPlaces {
-      _id
+      id
       name
+      type
       category
       operator
       website
@@ -16,12 +17,27 @@ export const GET_PLACES = gql`
         postcode
         housenumber
       }
-      geometry {
-        coordinates
+      location {
+        lat
+        lng
       }
     }
   }
 `;
+
+export const LOGIN_USER = gql`
+  mutation Login($email: String!, $password: String!) {
+    login(email: $email, password: $password) {
+      token
+      user {
+        _id
+        name
+        email
+      }
+    }
+  }
+`;
+
 
 export const REGISTER_USER = gql`
   mutation Register($name: String!, $email: String!, $password: String!) {

@@ -6,6 +6,10 @@ const resolvers = {
     getPlaces: async () => {
       return await Place.find({});
     },
+    getPlaceById: async (_, { id }) => {
+    return await Place.findById(id);
+  },
+  
     getNearbyPlaces: async (_, { lat, lng, radius }) => {
       return await Place.find({
         geometry: {
@@ -25,6 +29,7 @@ const resolvers = {
       });
     },
   },
+  
   Place: {
     id: (parent) => parent._id.toString(),
     location: (parent) => {

@@ -1,4 +1,5 @@
-// React Leaflet MapView component
+// components/MapView.jsx
+import React from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -8,8 +9,8 @@ export default function MapView({ places }) {
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       {places.map(place => (
         <Marker
-          key={place._id}
-          position={[place.geometry.coordinates[1], place.geometry.coordinates[0]]}
+          key={place.id}
+          position={[place.location.lat, place.location.lng]}
         >
           <Popup>
             <strong>{place.name}</strong><br />
