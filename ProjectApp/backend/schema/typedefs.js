@@ -3,9 +3,9 @@ import { gql } from 'apollo-server-express';
 
 const typeDefs = gql`
   type Location {
-    lat: Float
-    lng: Float
-  }
+  lat: Float
+  lng: Float
+}
 
   type Address {
     city: String
@@ -37,11 +37,14 @@ const typeDefs = gql`
     location: Location
   }
 
-  type User {
-    _id: ID!
-    name: String
-    email: String
-  }
+  
+type User {
+  _id: ID!
+  name: String
+  email: String
+  favorites: [Place]
+  location: Location
+}
 
   type AuthPayload {
     token: String
@@ -63,6 +66,7 @@ const typeDefs = gql`
     deleteUser: Boolean
     addFavorite(placeId: ID!): Boolean
     removeFavorite(placeId: ID!): Boolean
+    updateUserLocation(lat: Float!, lng: Float!): User
   }
 `;
 

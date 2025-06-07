@@ -1,4 +1,5 @@
 // SiteDetail component
+import React from 'react';
 export default function SiteDetail({ place }) {
   return (
     <div className="p-4">

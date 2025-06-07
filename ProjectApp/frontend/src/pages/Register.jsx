@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { REGISTER_USER } from '../services/graphql';
-import { saveToken } from '../services/auth';
+// ✅ Removed: import { saveToken } from '../services/auth';
 
 export default function Register() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
@@ -13,16 +13,14 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('📤 Sending form:', form); // 👈 Check values
     try {
       const res = await register({ variables: form });
-      console.log('✅ Response:', res);
-
       if (res.data?.register?.token) {
-        saveToken(res.data.register.token);
-        alert('🎉 Registered successfully!');
+        alert('🎉 Registered successfully! Please log in to continue.');
+        // Optionally redirect to login page:
+        // navigate('/login');
       } else {
-        alert('⚠️ No token returned.');
+        alert('⚠️ Registration succeeded but no token returned.');
       }
     } catch (err) {
       console.error('❌ Error during registration:', err);
@@ -30,31 +28,37 @@ export default function Register() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        name="name"
-        placeholder="Name"
-        value={form.name}
-        onChange={handleChange}
-      />
-      <input
-        name="email"
-        placeholder="Email"
-        value={form.email}
-        onChange={handleChange}
-      />
-      <input
-        name="password"
-        type="password"
-        placeholder="Password"
-        value={form.password}
-        onChange={handleChange}
-      />
-      <button type="submit" disabled={loading}>
-        Register
-      </button>
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>❌ {error.message}</p>}
-    </form>
+    <div className="register-container">
+      <h2>Register</h2>
+      <form onSubmit={handleSubmit} className="register-form">
+        <input
+          className="form-input"
+          name="name"
+          placeholder="Name"
+          value={form.name}
+          onChange={handleChange}
+        />
+        <input
+          className="form-input"
+          name="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={handleChange}
+        />
+        <input
+          className="form-input"
+          name="password"
+          type="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={handleChange}
+        />
+        <button type="submit" className="form-button" disabled={loading}>
+          Register
+        </button>
+        {loading && <p>Loading...</p>}
+        {error && <p className="error-message">❌ {error.message}</p>}
+      </form>
+    </div>
   );
 }

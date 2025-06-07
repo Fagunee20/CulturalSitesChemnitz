@@ -89,7 +89,28 @@ export const userResolvers = {
       });
 
       return true;
-    }
+    },
+
+    // ✅ Correctly placed here
+    updateUserLocation: async (_, { lat, lng }, { user }) => {
+  if (!user) throw new Error('Not authenticated');
+
+  console.log("Updating location for user:", user.userId, "lat:", lat, "lng:", lng);
+
+  const updated = await User.findByIdAndUpdate(
+    user.userId,
+    {
+      location: {
+        type: 'Point',
+        coordinates: [lng, lat]
+      }
+    },
+    { new: true }
+  );
+
+  console.log("Updated user:", updated);
+  return updated;
+},
   },
 
   Query: {

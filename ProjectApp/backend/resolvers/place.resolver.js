@@ -4,32 +4,42 @@ import Place from '../models/place.model.js';
 const resolvers = {
   Query: {
     getPlaces: async () => {
-      return await Place.find({});
+      try {
+        return await Place.find({});
+      } catch (error) {
+        console.error("Error fetching places:", error);
+        throw new Error("Failed to fetch places");
+      }
     },
+
     getPlaceById: async (_, { id }) => {
-    return await Place.findById(id);
-  },
-  
+      return await Place.findById(id);
+    },
+
     getNearbyPlaces: async (_, { lat, lng, radius }) => {
-      return await Place.find({
+      console.log(`Searching nearby places at lat: ${lat}, lng: ${lng}, radius: ${radius}`);
+      const places = await Place.find({
         geometry: {
           $nearSphere: {
             $geometry: {
               type: "Point",
-              coordinates: [lng, lat], // GeoJSON order is [lng, lat]
+              coordinates: [lng, lat], // GeoJSON requires [lng, lat]
             },
-            $maxDistance: radius, // in meters
+            $maxDistance: radius,
           },
         },
       });
+      console.log(`Found ${places.length} nearby places.`);
+      return places;
     },
+
     searchPlaces: async (_, { keyword }) => {
       return await Place.find({
-        $text: { $search: keyword }
+        $text: { $search: keyword },
       });
     },
   },
-  
+
   Place: {
     id: (parent) => parent._id.toString(),
     location: (parent) => {
