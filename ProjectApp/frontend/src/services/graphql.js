@@ -108,8 +108,8 @@ export const UPDATE_USER_LOCATION = gql`
       _id
       name
       location {
-        type
-        coordinates
+        lat
+        lng
       }
     }
   }

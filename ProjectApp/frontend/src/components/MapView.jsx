@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
+// Fix Leaflet marker icon issues with Webpack
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -22,12 +23,14 @@ export default function MapView({ places }) {
     return <p>No places to show.</p>;
   }
 
+  // Find the first valid place with lat/lng for centering map
   const firstPlace = places.find(
     (p) =>
       typeof p.location?.lat === 'number' &&
       typeof p.location?.lng === 'number'
   );
 
+  // Default center if none found
   const center = firstPlace
     ? [firstPlace.location.lat, firstPlace.location.lng]
     : [50.83, 12.92];
@@ -39,14 +42,18 @@ export default function MapView({ places }) {
   console.log('Places passed to MapView:', places);
 
   return (
-    <MapContainer center={center} zoom={13} style={{ height: '80vh', width: '100%' }}>
+    <MapContainer
+      center={center}
+      zoom={13}
+      style={{ height: '80vh', width: '100%' }}
+    >
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       {places.map((place) => {
         const lat = place.location?.lat;
         const lng = place.location?.lng;
 
         if (typeof lat !== 'number' || typeof lng !== 'number') {
-          return null;
+          return null; // skip invalid locations
         }
 
         return (
@@ -64,6 +71,7 @@ export default function MapView({ places }) {
                   backgroundColor: '#eee',
                   border: '1px solid #ccc',
                   padding: '4px 8px',
+                  borderRadius: '4px',
                 }}
               >
                 View Details

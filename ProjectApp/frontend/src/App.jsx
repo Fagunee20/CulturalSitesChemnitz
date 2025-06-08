@@ -20,14 +20,16 @@ import TenMinutePlaces from './pages/TenMinutePlaces'; // ✅ Import added
 
 import { getToken } from './services/auth';
 
-// 1. Create the HTTP link
+// 1. Create the HTTP link with credentials included for CORS + auth to work properly
 const httpLink = createHttpLink({
   uri: 'http://localhost:4000/graphql',
+  credentials: 'include',  // <--- This line is important
 });
 
-// 2. Middleware to attach token
+// 2. Middleware to attach token to headers
 const authLink = setContext((_, { headers }) => {
   const token = getToken();
+  console.log('Using token:', token); // Debug to confirm token presence
   return {
     headers: {
       ...headers,

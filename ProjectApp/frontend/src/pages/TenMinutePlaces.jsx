@@ -3,9 +3,9 @@ import { useLazyQuery, useMutation, gql } from '@apollo/client';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { UPDATE_USER_LOCATION } from '../services/graphql'; // Make sure this is defined
+import { UPDATE_USER_LOCATION } from '../services/graphql'; // Ensure this is defined properly
 
-// Fix Leaflet marker icons
+// Fix Leaflet marker icons (important for markers to show)
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -30,6 +30,17 @@ const GET_NEARBY_PLACES = gql`
     }
   }
 `;
+
+// Custom red icon for "You are here"
+const redIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+  iconRetinaUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
 
 export default function TenMinutePlaces() {
   const [location, setLocation] = useState(null);
@@ -81,6 +92,35 @@ export default function TenMinutePlaces() {
     );
   };
 
+  if (!location) {
+    // Show button and message until location is set
+    return (
+      <div className="p-4 max-w-3xl mx-auto">
+        <h2 className="text-xl font-bold mb-4">Cultural Places within 10 Minutes</h2>
+
+        <div className="flex gap-2 mb-4">
+          <select
+            value={radius}
+            onChange={(e) => setRadius(parseInt(e.target.value))}
+            className="border p-2 rounded"
+          >
+            <option value={800}>🚶 Walk (800m)</option>
+            <option value={3000}>🚴 Bike (3km)</option>
+            <option value={5000}>🚍 Public Transport (5km)</option>
+          </select>
+          <button
+            onClick={handleGetLocation}
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            Use My Location
+          </button>
+        </div>
+
+        <p>Please click "Use My Location" and allow location access to see nearby cultural places.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 max-w-3xl mx-auto">
       <h2 className="text-xl font-bold mb-4">Cultural Places within 10 Minutes</h2>
@@ -99,24 +139,25 @@ export default function TenMinutePlaces() {
           onClick={handleGetLocation}
           className="bg-blue-600 text-white px-4 py-2 rounded"
         >
-          Use My Location
+          Refresh Location
         </button>
       </div>
 
       {loading && <p>Loading nearby places...</p>}
       {error && <p className="text-red-500">❌ {error.message}</p>}
 
-      {location && data?.getNearbyPlaces?.length > 0 && (
+      {data?.getNearbyPlaces?.length > 0 ? (
         <MapContainer
           center={[location.lat, location.lng]}
           zoom={13}
-          className="h-96 w-full rounded shadow"
+          style={{ height: '400px', width: '100%' }}  // Explicit height and width are necessary!
+          className="rounded shadow"
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution="&copy; OpenStreetMap contributors"
           />
-          <Marker position={[location.lat, location.lng]}>
+          <Marker position={[location.lat, location.lng]}icon={redIcon}>
             <Popup>You are here</Popup>
           </Marker>
           {data.getNearbyPlaces.map((place) => (
@@ -132,10 +173,8 @@ export default function TenMinutePlaces() {
             </Marker>
           ))}
         </MapContainer>
-      )}
-
-      {location && data?.getNearbyPlaces?.length === 0 && !loading && (
-        <p>No cultural places found within the selected radius.</p>
+      ) : (
+        !loading && <p>No cultural places found within the selected radius.</p>
       )}
     </div>
   );

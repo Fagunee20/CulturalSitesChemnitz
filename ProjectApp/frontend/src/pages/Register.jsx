@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { REGISTER_USER } from '../services/graphql';
-// ✅ Removed: import { saveToken } from '../services/auth';
+import { saveToken } from '../services/auth';  // <--- Import this
 
 export default function Register() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
@@ -16,9 +16,13 @@ export default function Register() {
     try {
       const res = await register({ variables: form });
       if (res.data?.register?.token) {
-        alert('🎉 Registered successfully! Please log in to continue.');
-        // Optionally redirect to login page:
-        // navigate('/login');
+        // Save token and user info to localStorage
+        saveToken(res.data.register.token, res.data.register.user);
+
+        alert('🎉 Registered successfully! You are now logged in.');
+
+        // Optionally redirect to home or somewhere else
+        // navigate('/');
       } else {
         alert('⚠️ Registration succeeded but no token returned.');
       }

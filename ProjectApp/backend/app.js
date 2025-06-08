@@ -1,6 +1,6 @@
+// backend/app.js
 import dotenv from 'dotenv';
 dotenv.config();
-console.log('Loaded MONGO_URL:', process.env.MONGO_URL);
 
 import express from 'express';
 import cors from 'cors';
@@ -31,10 +31,23 @@ const mergedResolvers = {
 const app = express();
 const port = process.env.PORT || 4000;
 
-// ✅ Apply CORS before GraphQL middleware
+// List of allowed origins for CORS
+const allowedOrigins = [
+  'http://localhost:5173',           // Your React frontend origin
+  'https://studio.apollographql.com' // Apollo Studio (optional)
+];
+
 app.use(cors({
-  origin: 'http://localhost:5173',  // adjust if frontend runs elsewhere
-  credentials: true,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like Postman or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = `CORS policy: Origin ${origin} is not allowed`;
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true,  // <-- Very important to allow cookies & auth headers
 }));
 
 async function startServer() {
@@ -57,7 +70,7 @@ async function startServer() {
   });
 
   await server.start();
-  server.applyMiddleware({ app });
+  server.applyMiddleware({ app, cors: false }); // Disable Apollo's built-in CORS, handled by express
 
   try {
     await mongoose.connect(process.env.MONGO_URL);

@@ -92,17 +92,21 @@ export const userResolvers = {
     },
 
     // ✅ Correctly placed here
-    updateUserLocation: async (_, { lat, lng }, { user }) => {
+  updateUserLocation: async (_, { lat, lng }, { user }) => {
   if (!user) throw new Error('Not authenticated');
 
-  console.log("Updating location for user:", user.userId, "lat:", lat, "lng:", lng);
+  // Make sure lat, lng are numbers
+  if (typeof lat !== 'number' || typeof lng !== 'number') {
+    console.log('updateUserLocation called with:', lat, lng, 'user:', user);
+    throw new Error('Invalid lat or lng');
+  }
 
   const updated = await User.findByIdAndUpdate(
     user.userId,
     {
       location: {
         type: 'Point',
-        coordinates: [lng, lat]
+        coordinates: [lng, lat] // ⚠️ Must be [lng, lat]
       }
     },
     { new: true }
@@ -111,6 +115,7 @@ export const userResolvers = {
   console.log("Updated user:", updated);
   return updated;
 },
+
   },
 
   Query: {
@@ -120,5 +125,14 @@ export const userResolvers = {
       const populated = await User.findById(user.userId).populate('favorites');
       return populated?.favorites || [];
     }
-  }
+  },
+  User: {
+    location: (parent) => {
+      if (!parent.location) return null;
+      return {
+        lat: parent.location.coordinates[1],
+        lng: parent.location.coordinates[0],
+      };
+    },
+  },
 };
