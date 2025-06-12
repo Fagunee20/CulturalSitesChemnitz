@@ -16,20 +16,19 @@ import PlaceDetail from './pages/PlaceDetail';
 import Header from './components/Header';
 import PrivateRoute from './components/PrivateRoute';
 import Account from './pages/UserAccount';
-import TenMinutePlaces from './pages/TenMinutePlaces'; // ✅ Import added
+import TenMinutePlaces from './pages/TenMinutePlaces';
+import VisitedPlaces from './pages/VisitedPlaces'; // ✅ Include visited view
 
 import { getToken } from './services/auth';
 
-// 1. Create the HTTP link with credentials included for CORS + auth to work properly
 const httpLink = createHttpLink({
   uri: 'http://localhost:4000/graphql',
-  credentials: 'include',  // <--- This line is important
+  credentials: 'include',
 });
 
-// 2. Middleware to attach token to headers
 const authLink = setContext((_, { headers }) => {
   const token = getToken();
-  console.log('Using token:', token); // Debug to confirm token presence
+  console.log('Using token:', token);
   return {
     headers: {
       ...headers,
@@ -38,7 +37,6 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
-// 3. Combine auth and HTTP links
 const client = new ApolloClient({
   link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
@@ -76,9 +74,6 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route path="/place/:id" element={<PlaceDetail />} />
-
-          {/* ✅ New Private Route for 10-Minute View */}
           <Route
             path="/ten-minute"
             element={
@@ -87,6 +82,15 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route
+            path="/visited"
+            element={
+              <PrivateRoute>
+                <VisitedPlaces />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/place/:id" element={<PlaceDetail />} />
         </Routes>
       </Router>
     </ApolloProvider>

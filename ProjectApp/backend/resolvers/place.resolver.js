@@ -1,15 +1,9 @@
-// backend/resolvers/place.resolver.js
 import Place from '../models/place.model.js';
 
-const resolvers = {
+export const placeResolvers = {
   Query: {
     getPlaces: async () => {
-      try {
-        return await Place.find({});
-      } catch (error) {
-        console.error("Error fetching places:", error);
-        throw new Error("Failed to fetch places");
-      }
+      return await Place.find({});
     },
 
     getPlaceById: async (_, { id }) => {
@@ -17,20 +11,17 @@ const resolvers = {
     },
 
     getNearbyPlaces: async (_, { lat, lng, radius }) => {
-      console.log(`Searching nearby places at lat: ${lat}, lng: ${lng}, radius: ${radius}`);
-      const places = await Place.find({
+      return await Place.find({
         geometry: {
           $nearSphere: {
             $geometry: {
               type: "Point",
-              coordinates: [lng, lat], // GeoJSON requires [lng, lat]
+              coordinates: [lng, lat],
             },
             $maxDistance: radius,
           },
         },
       });
-      console.log(`Found ${places.length} nearby places.`);
-      return places;
     },
 
     searchPlaces: async (_, { keyword }) => {
@@ -49,7 +40,5 @@ const resolvers = {
         lng: parent.geometry.coordinates[0],
       };
     },
-  },
+  }
 };
-
-export default resolvers;

@@ -60,7 +60,7 @@ export default function Favorites() {
               {favorites.map((place) => (
                 <tr key={place.id} className="hover:bg-gray-100">
                   <td className="border px-2 py-1">{place.name}</td>
-                  <td className="border px-2 py-1">{place.category}</td>
+                  <td className="border px-2 py-1">{place.type}</td>
                   <td className="border px-2 py-1">
                     <button
                       onClick={() => handleRemove(place.id)}
@@ -84,7 +84,7 @@ export default function Favorites() {
                 <Marker key={place.id} position={[place.location.lat, place.location.lng]}>
                   <Popup>
                     <strong>{place.name}</strong><br />
-                    Category: {place.category}
+                    Category: {place.type}
                   </Popup>
                 </Marker>
               )

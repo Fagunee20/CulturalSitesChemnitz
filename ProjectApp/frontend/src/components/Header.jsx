@@ -23,6 +23,7 @@ export default function Header() {
           {!user && <Link to="/register">Register</Link>}
           {!user && <Link to="/login">Login</Link>}
           {user && <Link to="/favorites">Favorites</Link>}
+          {user && <Link to="/visited">Visited</Link>}
           {user && <Link to="/ten-minute">🕒 Ten-Minute View</Link>}
           <Link to="/docs">Docs</Link>
           <Link to="/about">About</Link>

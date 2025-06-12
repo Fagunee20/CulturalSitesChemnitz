@@ -47,10 +47,7 @@ export default function Home() {
 
   return (
     <div>
-      {/* Header component */}
-      <Header />
-
-      {/* Main content */}
+       {/* Main content */}
       <main className="p-4 max-w-6xl mx-auto">
         <input
           type="text"

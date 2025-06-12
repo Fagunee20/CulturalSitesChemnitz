@@ -1,59 +1,44 @@
-// backend/app.js
 import dotenv from 'dotenv';
 dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
-import { ApolloServer } from 'apollo-server-express';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
+import { ApolloServer } from 'apollo-server-express';
 
 import typeDefs from './schema/typedefs.js';
-import placeResolvers from './resolvers/place.resolver.js';
-import { userResolvers } from './resolvers/user.resolver.js';
+import resolvers from './resolvers/index.js'; // ✅ Combined resolvers
 import Place from './models/place.model.js';
 
 const SECRET = process.env.JWT_SECRET || 'dev-secret-key';
-
-const mergedResolvers = {
-  Query: {
-    ...placeResolvers.Query,
-    ...userResolvers.Query,
-  },
-  Mutation: {
-    ...userResolvers.Mutation,
-  },
-  Place: {
-    ...placeResolvers.Place,
-  },
-};
+const PORT = process.env.PORT || 4000;
 
 const app = express();
-const port = process.env.PORT || 4000;
 
-// List of allowed origins for CORS
+// ✅ CORS configuration for frontend & Apollo Studio
 const allowedOrigins = [
-  'http://localhost:5173',           // Your React frontend origin
-  'https://studio.apollographql.com' // Apollo Studio (optional)
+  'http://localhost:5173',             // Your React frontend
+  'https://studio.apollographql.com'   // Apollo Studio (optional)
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like Postman or curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = `CORS policy: Origin ${origin} is not allowed`;
-      return callback(new Error(msg), false);
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
-    return callback(null, true);
+    return callback(new Error(`CORS policy: Origin ${origin} is not allowed`), false);
   },
-  credentials: true,  // <-- Very important to allow cookies & auth headers
+  credentials: true
 }));
+
+// ✅ JSON parser
+app.use(express.json());
 
 async function startServer() {
   const server = new ApolloServer({
     typeDefs,
-    resolvers: mergedResolvers,
+    resolvers,
     context: ({ req }) => {
       const auth = req.headers.authorization || '';
       if (auth.startsWith('Bearer ')) {
@@ -70,16 +55,17 @@ async function startServer() {
   });
 
   await server.start();
-  server.applyMiddleware({ app, cors: false }); // Disable Apollo's built-in CORS, handled by express
+  server.applyMiddleware({ app, cors: false }); // Disable Apollo CORS (we use Express CORS)
 
   try {
     await mongoose.connect(process.env.MONGO_URL);
     console.log('✅ Connected to MongoDB');
+
     await Place.createIndexes();
     console.log('✅ Place indexes created');
 
-    app.listen(port, () => {
-      console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`);
+    app.listen(PORT, () => {
+      console.log(`🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`);
     });
   } catch (err) {
     console.error('❌ MongoDB connection error:', err);

@@ -1,11 +1,10 @@
-// backend/schema/typedefs.js
 import { gql } from 'apollo-server-express';
 
 const typeDefs = gql`
   type Location {
-  lat: Float
-  lng: Float
-}
+    lat: Float
+    lng: Float
+  }
 
   type Address {
     city: String
@@ -23,6 +22,7 @@ const typeDefs = gql`
 
   type Place {
     id: ID!
+     _id: ID!
     name: String
     type: String
     category: String
@@ -35,20 +35,36 @@ const typeDefs = gql`
     opening_hours: String
     diet: Diet
     location: Location
+    averageRating: Float  # ✅ New field
   }
 
-  
-type User {
-  _id: ID!
-  name: String
-  email: String
-  favorites: [Place]
-  location: Location
-}
+  type VisitedPlace {
+    place: Place!
+    mode: String!
+    visitedAt: String!
+  }
+
+  type User {
+    _id: ID!
+    name: String
+    email: String
+    favorites: [Place]
+    visitedPlaces: [VisitedPlace]  # ✅ New field
+    location: Location
+  }
 
   type AuthPayload {
     token: String
     user: User
+  }
+
+  type Review {
+    _id: ID!
+    place: Place!
+    user: User!
+    rating: Int!
+    comment: String!
+    createdAt: String!
   }
 
   type Query {
@@ -57,6 +73,9 @@ type User {
     searchPlaces(keyword: String!): [Place]
     getFavorites: [Place]
     getPlaceById(id: ID!): Place
+    getReviewsByPlace(placeId: ID!): [Review]       # ✅ New
+    me: User    
+    getVisitedPlaces: [VisitedPlace]                                     # ✅ New
   }
 
   type Mutation {
@@ -67,6 +86,16 @@ type User {
     addFavorite(placeId: ID!): Boolean
     removeFavorite(placeId: ID!): Boolean
     updateUserLocation(lat: Float!, lng: Float!): User
+
+    # ✅ New review system
+    addReview(placeId: ID!, rating: Int!, comment: String!): Review
+    updateReview(reviewId: ID!, rating: Int!, comment: String!): Review
+    deleteReview(reviewId: ID!): Boolean
+
+    # ✅ Visited place tracker
+    collectNearbyPlaces(lat: Float!, lng: Float!, radius: Float!): [Place]
+    markPlaceAsVisited(placeId: ID!, mode: String): Boolean
+    
   }
 `;
 

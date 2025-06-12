@@ -1,11 +1,34 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
+const visitedPlaceSchema = new mongoose.Schema({
+  place: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Place'
+  },
+  mode: {
+  type: String,
+  enum: ['walk', 'bike', 'car', 'manual'],  // ← Add 'manual' to the list
+  default: 'walk'
+  },
+  visitedAt: {
+    type: Date,
+    default: Date.now
+  }
+}, { _id: false });  // Prevent Mongoose from auto-creating _id for each subdoc
+
 const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true, required: true },
   passwordHash: String,
-  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Place' }],
+
+  favorites: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Place'
+  }],
+
+  visitedPlaces: [visitedPlaceSchema],
+
   location: {
     type: {
       type: String,
@@ -13,14 +36,13 @@ const userSchema = new mongoose.Schema({
       default: 'Point'
     },
     coordinates: {
-      type: [Number], // [lng, lat]
-      default: [0, 0], // Default to [longitude, latitude] = [0, 0]
+      type: [Number],
+      default: [0, 0],
       required: true
     }
   }
 }, { timestamps: true });
 
-// ✅ Create 2dsphere index for geospatial queries
 userSchema.index({ location: '2dsphere' });
 
 userSchema.methods.validatePassword = function (password) {
