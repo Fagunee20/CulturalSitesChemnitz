@@ -1,4 +1,5 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import {
   ApolloClient,
   InMemoryCache,
@@ -6,7 +7,6 @@ import {
   createHttpLink,
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import Home from './pages/Home';
 import Register from './pages/Register';
@@ -17,7 +17,10 @@ import Header from './components/Header';
 import PrivateRoute from './components/PrivateRoute';
 import Account from './pages/UserAccount';
 import TenMinutePlaces from './pages/TenMinutePlaces';
-import VisitedPlaces from './pages/VisitedPlaces'; // ✅ Include visited view
+import VisitedPlaces from './pages/VisitedPlaces';
+import TradePage from './pages/Trade';
+import TradeInbox from './pages/TradeInbox'; // ✅ New inbox for incoming trade requests
+import About from './pages/About';
 
 import { getToken } from './services/auth';
 
@@ -28,7 +31,6 @@ const httpLink = createHttpLink({
 
 const authLink = setContext((_, { headers }) => {
   const token = getToken();
-  console.log('Using token:', token);
   return {
     headers: {
       ...headers,
@@ -90,7 +92,24 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route
+            path="/trade"
+            element={
+              <PrivateRoute>
+                <TradePage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/trade-inbox"
+            element={
+              <PrivateRoute>
+                <TradeInbox />
+              </PrivateRoute>
+            }
+          />
           <Route path="/place/:id" element={<PlaceDetail />} />
+          <Route path="/about" element={<About />} />
         </Routes>
       </Router>
     </ApolloProvider>

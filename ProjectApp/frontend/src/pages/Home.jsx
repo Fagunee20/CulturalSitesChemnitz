@@ -1,13 +1,12 @@
+// src/pages/Home.jsx
 import React, { useState } from 'react';
 import { useQuery, useMutation, gql } from '@apollo/client';
 import { Link } from 'react-router-dom';
 import { GET_PLACES, GET_FAVORITES } from '../services/graphql';
 import MapView from '../components/MapView';
 import ListView from '../components/ListView';
-import Header from '../components/Header';
-import { getUser } from '../services/auth'; // ✅ Auth helper
+import { getUser } from '../services/auth';
 
-// ✅ Mutation to add favorite place
 const ADD_FAVORITE = gql`
   mutation AddFavorite($placeId: ID!) {
     addFavorite(placeId: $placeId)
@@ -15,27 +14,24 @@ const ADD_FAVORITE = gql`
 `;
 
 export default function Home() {
-  // GraphQL query for places
   const { loading, error, data } = useQuery(GET_PLACES);
   const [filter, setFilter] = useState('');
-
-  // GraphQL mutation for adding favorites
   const [addFavorite] = useMutation(ADD_FAVORITE, {
     refetchQueries: [{ query: GET_FAVORITES }],
     awaitRefetchQueries: true,
   });
 
-  const user = getUser(); // ✅ Get logged-in user info
+  const user = getUser();
 
   if (loading) return <p className="text-center mt-8">Loading...</p>;
   if (error) return <p className="text-center mt-8 text-red-600">Error: {error.message}</p>;
 
-  // Filtered result from search input
   const filteredPlaces = data.getPlaces.filter(place =>
-    place.name.toLowerCase().includes(filter.toLowerCase())
+    place.name.toLowerCase().includes(filter.toLowerCase()) ||
+    place.type?.toLowerCase().includes(filter.toLowerCase()) ||
+    place.category?.toLowerCase().includes(filter.toLowerCase())
   );
 
-  // Add to favorites handler
   const handleAddFavorite = async (placeId) => {
     try {
       await addFavorite({ variables: { placeId } });
@@ -46,38 +42,36 @@ export default function Home() {
   };
 
   return (
-    <div>
-       {/* Main content */}
-      <main className="p-4 max-w-6xl mx-auto">
-        <input
-          type="text"
-          placeholder="Search by name..."
-          value={filter}
-          onChange={e => setFilter(e.target.value)}
-          className="border p-2 rounded w-full mb-4 shadow-sm"
-        />
+    <div className="home-wrapper px-4">
+      <input
+        type="text"
+        placeholder="Search by name, type, or category..."
+        value={filter}
+        onChange={e => setFilter(e.target.value)}
+        className="home-search w-full p-2 border rounded-md my-4"
+      />
 
-        {/* Map View */}
-        <MapView places={filteredPlaces} />
+      {/* ✅ Simple text legend */}
+      <p className="text-sm text-center my-2">
+        Blue: Restaurants | Green: Museums | Yellow: Theatres | Gray: Your Location
+      </p>
 
-        {/* List View with add to favorite support */}
-        <ListView
-          places={filteredPlaces}
-          onAddFavorite={handleAddFavorite}
-        />
-      </main>
+      <MapView places={filteredPlaces} />
 
-      {/* 🕒 Floating Button for 10-Minute View (Only if logged in) */}
+      <ListView
+        places={filteredPlaces}
+        onAddFavorite={handleAddFavorite}
+      />
+
       {user && (
         <Link to="/ten-minute">
-  <button
-    className="fixed right-6 bottom-6 z-50 bg-blue-600 text-white px-5 py-3 rounded-full shadow-xl hover:bg-blue-700 transition duration-200"
-    title="See cultural sites near you"
-  >
-    🕒 10-Minute View
-  </button>
-</Link>
-
+          <button
+            className="floating-tenmin-button fixed bottom-6 right-6 bg-blue-600 text-white py-2 px-4 rounded shadow-md hover:bg-blue-700"
+            title="See cultural sites near you"
+          >
+            🕒 10-Minute View
+          </button>
+        </Link>
       )}
     </div>
   );

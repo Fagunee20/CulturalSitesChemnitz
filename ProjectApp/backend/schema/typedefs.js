@@ -1,3 +1,4 @@
+// schema/typedefs.js
 import { gql } from 'apollo-server-express';
 
 const typeDefs = gql`
@@ -22,7 +23,7 @@ const typeDefs = gql`
 
   type Place {
     id: ID!
-     _id: ID!
+    _id: ID!
     name: String
     type: String
     category: String
@@ -35,7 +36,7 @@ const typeDefs = gql`
     opening_hours: String
     diet: Diet
     location: Location
-    averageRating: Float  # ✅ New field
+    averageRating: Float
   }
 
   type VisitedPlace {
@@ -44,12 +45,20 @@ const typeDefs = gql`
     visitedAt: String!
   }
 
+  type CollectedPlace {
+    place: Place!
+    mode: String!
+    collectedAt: String!
+  }
+
   type User {
     _id: ID!
     name: String
     email: String
+    tradeId: String
     favorites: [Place]
-    visitedPlaces: [VisitedPlace]  # ✅ New field
+    visitedPlaces: [VisitedPlace]
+    collectedPlaces: [CollectedPlace]
     location: Location
   }
 
@@ -67,35 +76,61 @@ const typeDefs = gql`
     createdAt: String!
   }
 
+  type TradeRequest {
+    id: ID!
+    fromUser: User!
+    toUser: User!
+    offeredPlace: Place!
+    requestedPlace: Place!
+    status: String!
+    createdAt: String!
+  }
+
   type Query {
     getPlaces: [Place]
     getNearbyPlaces(lat: Float!, lng: Float!, radius: Float!): [Place]
     searchPlaces(keyword: String!): [Place]
     getFavorites: [Place]
     getPlaceById(id: ID!): Place
-    getReviewsByPlace(placeId: ID!): [Review]       # ✅ New
-    me: User    
-    getVisitedPlaces: [VisitedPlace]                                     # ✅ New
+    getReviewsByPlace(placeId: ID!): [Review]
+    me: User
+    getVisitedPlaces: [VisitedPlace]
+    getCollectedPlaces: [Place]
+    getUserCollectedPlaces(userId: ID!): [Place]
+
+    # ✅ User Queries
+    getAllUsers: [User!]!
+
+    # ✅ Trade Queries
+    getUserByTradeId(tradeId: String!): User
+    myTradeRequests: [TradeRequest!]!
+    sentTradeRequests: [TradeRequest!]!
+    
   }
+  
+
 
   type Mutation {
     register(name: String!, email: String!, password: String!): AuthPayload
     login(email: String!, password: String!): AuthPayload
     updateUser(name: String, email: String, password: String): User
     deleteUser: Boolean
+
     addFavorite(placeId: ID!): Boolean
     removeFavorite(placeId: ID!): Boolean
     updateUserLocation(lat: Float!, lng: Float!): User
 
-    # ✅ New review system
     addReview(placeId: ID!, rating: Int!, comment: String!): Review
     updateReview(reviewId: ID!, rating: Int!, comment: String!): Review
     deleteReview(reviewId: ID!): Boolean
 
-    # ✅ Visited place tracker
     collectNearbyPlaces(lat: Float!, lng: Float!, radius: Float!): [Place]
     markPlaceAsVisited(placeId: ID!, mode: String): Boolean
-    
+    collectPlace(placeId: ID!): Boolean
+
+    tradePlace(givePlaceId: ID!, receivePlaceId: ID!, partnerUserId: ID!): Boolean
+    sendTradeRequest(toUserId: ID!, offeredPlaceId: ID!, requestedPlaceId: ID!): TradeRequest!
+    respondToTradeRequest(tradeId: ID!, accept: Boolean!): Boolean!
   }
 `;
 

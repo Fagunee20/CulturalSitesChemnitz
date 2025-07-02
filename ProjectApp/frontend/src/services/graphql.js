@@ -150,6 +150,15 @@ export const GET_VISITED_PLACES = gql`
     }
   }
 `;
+const GET_COLLECTED_PLACES = gql`
+  query {
+    getCollectedPlaces {
+      _id
+      name
+    }
+  }
+`;
+
 
 
 // ---------- MUTATIONS ----------
@@ -252,3 +261,17 @@ export const DELETE_REVIEW = gql`
     deleteReview(reviewId: $reviewId)
   }
 `;
+
+
+export const COLLECT_PLACE = gql`
+  mutation CollectPlace($placeId: ID!) {
+    collectPlace(placeId: $placeId)
+  }
+`;
+
+export const TRADE_PLACE = gql`
+  mutation TradePlace($givePlaceId: ID!, $receivePlaceId: ID!, $partnerUserId: ID!) {
+    tradePlace(givePlaceId: $givePlaceId, receivePlaceId: $receivePlaceId, partnerUserId: $partnerUserId)
+  }
+`;
+

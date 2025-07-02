@@ -24,15 +24,16 @@ export default function Header() {
           {!user && <Link to="/login">Login</Link>}
           {user && <Link to="/favorites">Favorites</Link>}
           {user && <Link to="/visited">Visited</Link>}
-          {user && <Link to="/ten-minute">🕒 Ten-Minute View</Link>}
-          <Link to="/docs">Docs</Link>
+          {user && <Link to="/ten-minute">Ten-Minute View</Link>}
+          {user && <Link to="/trade">Trade</Link>}
+          {user && <Link to="/trade-inbox">Trade Inbox</Link>} 
           <Link to="/about">About</Link>
         </nav>
 
         {user && (
           <div className="user-info">
             <Link to="/account" style={{ textDecoration: 'none', color: 'white' }}>
-              <span>👤 {user.name}</span>
+              <span> {user.name}</span>
             </Link>
             <button onClick={handleLogout}>Logout</button>
           </div>

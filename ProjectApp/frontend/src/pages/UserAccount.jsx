@@ -1,12 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { useMutation } from '@apollo/client';
+import { useMutation, useQuery, gql } from '@apollo/client';
 import { UPDATE_USER, DELETE_USER } from '../services/graphql';
 import { getUser, clearAuth, saveUser } from '../services/auth';
 import { useNavigate } from 'react-router-dom';
 
+const ME_QUERY = gql`
+  query {
+    me {
+      _id
+      name
+      email
+      tradeId
+    }
+  }
+`;
+
 export default function UserAccount() {
   const navigate = useNavigate();
+  const { data, loading: meLoading, error: meError } = useQuery(ME_QUERY);
   const [form, setForm] = useState({ name: '', email: '' });
+  const [tradeId, setTradeId] = useState('');
 
   const [updateUser, { loading, error }] = useMutation(UPDATE_USER, {
     onCompleted: (data) => {
@@ -29,14 +42,14 @@ export default function UserAccount() {
   });
 
   useEffect(() => {
-    const storedUser = getUser();
-    if (storedUser) {
+    if (data?.me) {
       setForm({
-        name: storedUser.name ?? '',
-        email: storedUser.email ?? '',
+        name: data.me.name ?? '',
+        email: data.me.email ?? '',
       });
+      setTradeId(data.me.tradeId);
     }
-  }, []);
+  }, [data]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -63,6 +76,9 @@ export default function UserAccount() {
     navigate('/login');
   };
 
+  if (meLoading) return <p>Loading account...</p>;
+  if (meError) return <p>Error fetching user: {meError.message}</p>;
+
   return (
     <div className="auth-container">
       <h2>Update Account</h2>
@@ -88,7 +104,20 @@ export default function UserAccount() {
         {error && <p className="error-message">❌ {error.message}</p>}
       </form>
 
-      <div className="account-buttons">
+      <div className="trade-id-display" style={{ marginTop: '1rem' }}>
+        <strong>🧾 Your Trade ID:</strong>
+        <pre style={{
+          background: '#f4f4f4',
+          padding: '0.5rem 1rem',
+          borderRadius: '6px',
+          fontFamily: 'monospace',
+          fontSize: '1rem',
+          marginTop: '0.5rem'
+        }}>{tradeId}</pre>
+        <small>Share this with friends to let them trade with you.</small>
+      </div>
+
+      <div className="account-buttons" style={{ marginTop: '1rem' }}>
         <button className="logout-button" onClick={handleLogout}>
           Logout
         </button>

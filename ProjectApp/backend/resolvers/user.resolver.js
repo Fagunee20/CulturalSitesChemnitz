@@ -2,6 +2,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 import User from '../models/user.model.js';
 import Place from '../models/place.model.js';
 
@@ -32,7 +33,25 @@ export const userResolvers = {
         model: 'Place'
       });
       return populated?.visitedPlaces || [];
-    }
+    },
+
+    getCollectedPlaces: async (_, __, { user }) => {
+      if (!user) throw new Error('Not authenticated');
+      const u = await User.findById(user.userId).populate('collectedPlaces.place');
+      return u.collectedPlaces
+        .filter(cp => cp.place != null)
+        .map(cp => cp.place);
+    },
+    getUserCollectedPlaces: async (_, { userId }) => {
+  const user = await User.findById(userId).populate('collectedPlaces.place');
+  if (!user) throw new Error('User not found');
+  return user.collectedPlaces.map(cp => cp.place);
+},
+
+
+    getUserByTradeId: async (_, { tradeId }) => {
+      return await User.findOne({ tradeId });
+    },
   },
 
   Mutation: {
@@ -150,6 +169,58 @@ export const userResolvers = {
 
       return true;
     },
+
+    collectPlace: async (_, { placeId }, { user }) => {
+      if (!user) throw new Error('Not authenticated');
+
+      const userDoc = await User.findById(user.userId);
+      if (!userDoc.collectedPlaces) userDoc.collectedPlaces = [];
+
+      const placeExists = await Place.findById(placeId);
+      if (!placeExists) throw new Error('Invalid place ID');
+
+      const alreadyCollected = userDoc.collectedPlaces.some(
+        entry => entry.place?.toString() === placeId
+      );
+
+      if (alreadyCollected) return false;
+
+      userDoc.collectedPlaces.push({
+        place: new mongoose.Types.ObjectId(placeId),
+        mode: 'manual',
+        collectedAt: new Date()
+      });
+
+      await userDoc.save();
+      return true;
+    },
+
+    tradePlace: async (_, { givePlaceId, receivePlaceId, partnerUserId }, { user }) => {
+      if (!user) throw new Error('Not authenticated');
+
+      const sender = await User.findById(user.userId);
+      const partner = await User.findById(partnerUserId);
+
+      if (!sender || !partner) throw new Error('Users not found');
+
+      const hasPlace = sender.collectedPlaces.some(cp => cp.place.toString() === givePlaceId);
+      const partnerHasPlace = partner.collectedPlaces.some(cp => cp.place.toString() === receivePlaceId);
+
+      if (!hasPlace || !partnerHasPlace) {
+        throw new Error('One of the users does not own the place they want to trade');
+      }
+
+      sender.collectedPlaces = sender.collectedPlaces.filter(cp => cp.place.toString() !== givePlaceId);
+      sender.collectedPlaces.push({ place: new mongoose.Types.ObjectId(receivePlaceId), mode: 'traded', collectedAt: new Date() });
+
+      partner.collectedPlaces = partner.collectedPlaces.filter(cp => cp.place.toString() !== receivePlaceId);
+      partner.collectedPlaces.push({ place: new mongoose.Types.ObjectId(givePlaceId), mode: 'traded', collectedAt: new Date() });
+
+      await sender.save();
+      await partner.save();
+
+      return true;
+    },
   },
 
   User: {
@@ -160,5 +231,5 @@ export const userResolvers = {
         lng: parent.location.coordinates[0],
       };
     },
-  }
+  },
 };

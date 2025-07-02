@@ -62,36 +62,31 @@ export default function TenMinutePlaces() {
   };
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
-      <h2 className="text-xl font-bold mb-4">Cultural Places within 10 Minutes</h2>
+    <div className="ten-minute-wrapper">
+      <h2>Cultural Places within 10 Minutes</h2>
 
-      <div className="flex gap-2 mb-4">
+      <div className="location-controls">
         <select
           value={radius}
           onChange={(e) => setRadius(parseInt(e.target.value))}
-          className="border p-2 rounded"
         >
           <option value={800}>🚶 Walk (800m)</option>
           <option value={3000}>🚴 Bike (3km)</option>
           <option value={5000}>🚍 Public Transport (5km)</option>
         </select>
-        <button
-          onClick={handleGetLocation}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
+        <button onClick={handleGetLocation}>
           {location ? 'Refresh Location' : 'Use My Location'}
         </button>
       </div>
 
-      {/* ✅ Show location status */}
       {location && (
-        <p className="text-green-700 font-semibold mb-2">
+        <p className="status-message success">
           📍 You are here: ({location.lat.toFixed(5)}, {location.lng.toFixed(5)})
         </p>
       )}
 
       {loading && <p>Loading nearby places...</p>}
-      {error && <p className="text-red-500">❌ {error.message}</p>}
+      {error && <p className="status-message error">❌ {error.message}</p>}
 
       {data?.getNearbyPlaces?.length > 0 ? (
         <TenMinuteMapView places={data.getNearbyPlaces} userLocation={location} />
